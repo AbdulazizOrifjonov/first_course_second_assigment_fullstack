@@ -1,0 +1,53 @@
+/* DoctorsPage Styles */
+
+/* Doctor card hover effect */
+.doctor-card {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+}
+
+.doctor-card:hover {
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.12);
+  border-color: #bbf7d0;
+  transform: translateY(-1px);
+}
+
+/* Doctor avatar */
+.doctor-avatar {
+  background: linear-gradient(135deg, #4ade80, #15803d);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+}
+
+/* Doctors grid layout */
+.doctors-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .doctors-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .doctors-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Action buttons */
+.doc-action-btn {
+  transition: color 0.15s ease, background-color 0.15s ease;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+}
+
+/* Empty state */
+.doctors-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem;
+  text-align: center;
+}

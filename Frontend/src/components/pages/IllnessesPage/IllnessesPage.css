@@ -1,0 +1,44 @@
+/* IllnessesPage Styles */
+
+/* Severity border colors for illness cards */
+.illness-card-mild {
+  border-left: 4px solid #4ade80;
+}
+
+.illness-card-moderate {
+  border-left: 4px solid #facc15;
+}
+
+.illness-card-severe {
+  border-left: 4px solid #fb923c;
+}
+
+.illness-card-critical {
+  border-left: 4px solid #ef4444;
+}
+
+/* Illness card hover */
+.illness-card {
+  transition: box-shadow 0.2s ease;
+}
+
+.illness-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* ICD code chip */
+.icd-chip {
+  font-family: monospace;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+}
+
+/* Quick ICD select buttons */
+.icd-quick-btn {
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}

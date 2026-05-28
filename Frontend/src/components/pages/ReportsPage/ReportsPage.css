@@ -1,0 +1,38 @@
+/* ReportsPage Styles */
+
+/* Report type selector buttons */
+.report-type-btn {
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.report-type-btn.active {
+  background-color: #16a34a;
+  color: white;
+}
+
+/* Report header gradient */
+.report-header {
+  background: linear-gradient(to right, #16a34a, #065f46);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 1rem 1rem 0 0;
+}
+
+/* Stats boxes */
+.report-stat-box {
+  text-align: center;
+  padding: 1rem;
+  border-radius: 0.75rem;
+}
+
+/* Print styles */
+@media print {
+  .report-controls {
+    display: none !important;
+  }
+  
+  .report-content {
+    padding: 0;
+    box-shadow: none;
+  }
+}

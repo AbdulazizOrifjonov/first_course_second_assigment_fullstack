@@ -1,0 +1,42 @@
+/* PatientsPage Styles */
+
+/* Patient table row hover */
+.patient-row {
+  transition: background-color 0.15s ease;
+}
+
+.patient-row:hover {
+  background-color: rgba(240, 253, 244, 0.5);
+}
+
+/* Patient avatar */
+.patient-avatar {
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+}
+
+/* Mobile card layout */
+.patient-mobile-card {
+  padding: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+/* Table header */
+.patients-table th {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+}
+
+/* Detail modal sections */
+.patient-detail-section {
+  background-color: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+}

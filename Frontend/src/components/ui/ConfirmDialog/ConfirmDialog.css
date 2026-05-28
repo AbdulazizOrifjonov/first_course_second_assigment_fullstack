@@ -1,0 +1,14 @@
+/* ConfirmDialog Component Styles */
+
+/* Icon shake animation for danger type */
+.confirm-danger-icon {
+  animation: iconShake 0.5s ease;
+}
+
+@keyframes iconShake {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(-8deg); }
+  40% { transform: rotate(8deg); }
+  60% { transform: rotate(-4deg); }
+  80% { transform: rotate(4deg); }
+}

@@ -1,0 +1,19 @@
+/* UserProfile Component Styles */
+
+/* Avatar gradient hover effect */
+.user-avatar {
+  transition: box-shadow 0.2s ease;
+}
+
+.user-avatar:hover {
+  box-shadow: 0 8px 24px rgba(22, 163, 74, 0.3);
+}
+
+/* Info cards hover */
+.user-info-card {
+  transition: background-color 0.15s ease;
+}
+
+.user-info-card:hover {
+  background-color: #f0fdf4;
+}

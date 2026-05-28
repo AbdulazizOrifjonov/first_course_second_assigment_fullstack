@@ -1,0 +1,118 @@
+/* Layout Styles */
+
+/* Sidebar */
+.sidebar {
+  background: white;
+  border-right: 1px solid #f3f4f6;
+  box-shadow: 1px 0 4px rgba(0,0,0,0.04);
+  transition: width 0.3s ease;
+  overflow-y: auto;
+  height: 100%;
+  z-index: 30;
+}
+
+.sidebar.expanded { width: 18rem; }
+.sidebar.collapsed { width: 4rem; }
+
+/* Nav link */
+.nav-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  transition: background-color 0.15s, color 0.15s;
+  text-align: left;
+}
+
+.nav-link.active {
+  background-color: #16a34a;
+  color: white;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
+.nav-link:not(.active):hover {
+  background-color: #f0fdf4;
+  color: #15803d;
+}
+
+/* Header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: white;
+  border-bottom: 1px solid #f3f4f6;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+}
+
+/* Notification panel */
+.notification-panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.75rem);
+  width: min(calc(100vw - 1.5rem), 24rem);
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  z-index: 50;
+}
+
+/* Mobile sidebar overlay */
+.mobile-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.mobile-sidebar {
+  position: relative;
+  width: 18rem;
+  height: 100%;
+  background: white;
+  box-shadow: 4px 0 16px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Footer */
+.app-footer {
+  background: white;
+  border-top: 1px solid #f3f4f6;
+  padding: 0.75rem 1.5rem;
+  text-align: center;
+}
+
+/* Clock display */
+.clock-display {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+/* Online indicator */
+.online-indicator {
+  width: 0.5rem;
+  height: 0.5rem;
+  background: #16a34a;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}

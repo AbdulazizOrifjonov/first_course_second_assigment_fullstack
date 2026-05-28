@@ -1,0 +1,44 @@
+/* AuditPage Styles */
+
+/* Log item hover animation */
+.audit-log-item {
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.audit-log-item:hover {
+  transform: translateX(2px);
+}
+
+/* Action badge colors */
+.audit-action-create {
+  background-color: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.audit-action-update {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+.audit-action-delete {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* Entity icon */
+.audit-entity-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* Loading state */
+.audit-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.875rem;
+}

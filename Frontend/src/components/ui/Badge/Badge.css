@@ -1,0 +1,18 @@
+/* Badge Component Styles */
+
+/* Base badge styling — Tailwind classes bilan ishlaydi.
+   Qo'shimcha custom stillari shu yerda yoziladi. */
+
+.badge-pulse {
+  animation: badgePulse 2s infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Gender badge icon sizing */
+.gender-icon {
+  line-height: 1;
+}
