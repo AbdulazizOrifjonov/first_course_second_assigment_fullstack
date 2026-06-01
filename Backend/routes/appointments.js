@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { AppointmentDB, AuditDB } = require('../db/database');
 const { requireAuth } = require('../middleware/auth');
+const { isAppointmentSlotAllowed, filterAllowedSlots } = require('../utils/appointmentRules');
 
 // GET /api/appointments  — barcha yoki filter qilingan
 router.get('/', requireAuth, (req, res) => {
@@ -43,7 +44,7 @@ router.get('/available-slots', requireAuth, (req, res) => {
 
     const toMin = (t) => { const [h,m] = t.split(':').map(Number); return h*60+m; };
 
-    const available = allSlots.filter(slot => {
+    const available = filterAllowedSlots(date, allSlots.filter(slot => {
       const slotStart = toMin(slot);
       const slotEnd = slotStart + 30;
       return !booked.some(a => {
@@ -51,7 +52,7 @@ router.get('/available-slots', requireAuth, (req, res) => {
         const e = s + a.durationMinutes;
         return slotStart < e && s < slotEnd;
       });
-    });
+    }));
 
     res.json({ date, doctorId, availableSlots: available, bookedCount: booked.length });
   } catch (err) {
@@ -73,6 +74,12 @@ router.post('/', requireAuth, (req, res) => {
     const { doctorId, patientId, appointmentDate, appointmentTime, durationMinutes, notes } = req.body;
     if (!doctorId || !patientId || !appointmentDate || !appointmentTime) {
       return res.status(400).json({ error: "Barcha majburiy maydonlarni to'ldiring" });
+    }
+
+    if (!isAppointmentSlotAllowed(appointmentDate, appointmentTime)) {
+      return res.status(400).json({
+        error: 'Qabul faqat hozirdan kamida 30 soat 30 daqiqa keyin belgilash mumkin.',
+      });
     }
 
     // Vaqt to'qnashuvi tekshiruvi

@@ -5,6 +5,8 @@ import { getToken } from '../../api/client';
 
 const AppContext = createContext(null);
 
+
+
 export function AppProvider({ children }) {
   const { user } = useAuth();
   const [doctors, setDoctors] = useState([]);

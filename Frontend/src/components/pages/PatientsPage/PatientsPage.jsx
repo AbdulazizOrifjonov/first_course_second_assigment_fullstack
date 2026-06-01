@@ -1,7 +1,7 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   Plus, Search, Edit, Trash2, Phone, Mail,
-  Calendar, MapPin, Eye, Filter, Users
+  Calendar, MapPin, Eye, Filter, Users, Clock
 } from 'lucide-react';
 import { api } from '../../../api';
 import { useAppData } from '../../../context/AppContext/AppContext';
@@ -10,6 +10,7 @@ import { useToast } from '../../../context/ToastContext/ToastContext';
 import { Modal } from '../../ui/Modal/Modal';
 import { ConfirmDialog } from '../../ui/ConfirmDialog/ConfirmDialog';
 import { StatusBadge, SeverityBadge, GenderBadge } from '../../ui/Badge/Badge';
+import { getFirstBookableDateStr, isAppointmentSlotAllowed } from '../../../utils/appointmentRules';
 import './PatientsPage.css';
 
 const emptyForm = {
@@ -21,6 +22,8 @@ const emptyForm = {
   phone: '',
   address: '',
   doctorId: '',
+  appointmentDate: '',
+  appointmentTime: '',
 };
 
 function calculateAge(dob) {
@@ -65,7 +68,7 @@ function PatientField({ label, name, type = 'text', required, form, errors, onCh
 }
 
 export function PatientsPage() {
-  const { doctors, patients, illnesses, refreshPatients, refreshIllnesses } = useAppData();
+  const { doctors, patients, illnesses, refreshPatients, refreshIllnesses, refreshAppointments } = useAppData();
   const { user, canDelete, isAdmin, isClinician } = useAuth();
   const { showToast } = useToast();
 
@@ -80,8 +83,31 @@ export function PatientsPage() {
   const [errors, setErrors] = useState({});
   const [viewPatient, setViewPatient] = useState(null);
   const [showDetail, setShowDetail] = useState(false);
+  const [availableSlots, setAvailableSlots] = useState([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   const canWrite = isAdmin || isClinician;
+
+  // Shifokor va sana tanlanganda bo'sh slotlarni yuklash (faqat yangi bemor)
+  useEffect(() => {
+    if (editPatient || !showForm || !form.doctorId || !form.appointmentDate) {
+      setAvailableSlots([]);
+      return;
+    }
+    setLoadingSlots(true);
+    api.getAvailableSlots(form.doctorId, form.appointmentDate)
+      .then((d) => {
+        const slots = d.availableSlots || [];
+        setAvailableSlots(slots);
+        if (slots.length > 0 && !slots.includes(form.appointmentTime)) {
+          setForm(prev => ({ ...prev, appointmentTime: slots[0] }));
+        } else if (slots.length === 0) {
+          setForm(prev => ({ ...prev, appointmentTime: '' }));
+        }
+      })
+      .catch(() => setAvailableSlots([]))
+      .finally(() => setLoadingSlots(false));
+  }, [editPatient, showForm, form.doctorId, form.appointmentDate]);
 
   const handleFieldChange = useCallback((name, value) => {
     setForm(prev => ({ ...prev, [name]: value }));
@@ -111,13 +137,28 @@ export function PatientsPage() {
     if (!form.dateOfBirth) e.dateOfBirth = "Tug'ilgan sana shart";
     if (!form.phone.trim()) e.phone = "Telefon shart";
     if (!form.doctorId) e.doctorId = "Shifokor tanlanishi shart";
+    if (!editPatient) {
+      if (!form.appointmentDate) e.appointmentDate = "Qabul sanasi tanlanishi shart";
+      if (!form.appointmentTime) e.appointmentTime = "Qabul vaqti tanlanishi shart";
+      else if (!isAppointmentSlotAllowed(form.appointmentDate, form.appointmentTime)) {
+        e.appointmentTime = "Qabul faqat hozirdan kamida 30 soat 30 daqiqa keyin belgilash mumkin";
+      } else if (!availableSlots.includes(form.appointmentTime)) {
+        e.appointmentTime = "Bu vaqt band. Boshqa vaqt tanlang";
+      }
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
   const openAdd = () => {
     setEditPatient(null);
-    setForm({ ...emptyForm, doctorId: doctors[0]?.id || '' });
+    setForm({
+      ...emptyForm,
+      doctorId: doctors.find(d => d.status === 'active')?.id || '',
+      appointmentDate: getFirstBookableDateStr(),
+      appointmentTime: '',
+    });
+    setAvailableSlots([]);
     setErrors({});
     setShowForm(true);
   };
@@ -141,8 +182,9 @@ export function PatientsPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
+    const { appointmentDate, appointmentTime, ...patientFields } = form;
     const payload = {
-      ...form,
+      ...patientFields,
       bloodType: '',
       emergencyContact: '',
       emergencyPhone: '',
@@ -157,14 +199,23 @@ export function PatientsPage() {
           message: `${form.firstName} ${form.lastName} saqlandi.`,
         });
       } else {
-        await api.createPatient(payload);
+        const patient = await api.createPatient(payload);
+        await api.createAppointment({
+          doctorId: form.doctorId,
+          patientId: patient.id,
+          appointmentDate,
+          appointmentTime,
+          durationMinutes: 30,
+          notes: "Bemor ro'yxatga olish paytida belgilangan qabul",
+        });
         showToast({
           type: 'success',
           title: user?.role === 'receptionist' ? 'Qabuldan yangi bemor keldi' : 'Bemor qo\'shildi',
-          message: `${form.firstName} ${form.lastName} ro'yxatga olindi.`,
+          message: `${form.firstName} ${form.lastName} ro'yxatga olindi. Qabul: ${appointmentDate} ${appointmentTime}`,
         });
       }
       await refreshPatients();
+      if (!editPatient) await refreshAppointments();
       setShowForm(false);
     } catch (err) {
       showToast({
@@ -400,7 +451,11 @@ export function PatientsPage() {
               <label className="block text-xs font-semibold text-gray-700 mb-1">Biriktirilgan Shifokor <span className="text-red-500">*</span></label>
               <select
                 value={form.doctorId}
-                onChange={e => setForm(prev => ({ ...prev, doctorId: e.target.value }))}
+                onChange={e => setForm(prev => ({
+                  ...prev,
+                  doctorId: e.target.value,
+                  appointmentTime: '',
+                }))}
                 className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 ${errors.doctorId ? 'border-red-400' : 'border-gray-200'}`}
               >
                 <option value="">Shifokorni tanlang</option>
@@ -410,6 +465,59 @@ export function PatientsPage() {
               </select>
               {errors.doctorId && <p className="text-xs text-red-500 mt-0.5">{errors.doctorId}</p>}
             </div>
+            {!editPatient && (
+              <>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Qabul Sanasi <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    min={getFirstBookableDateStr()}
+                    value={form.appointmentDate}
+                    onChange={e => setForm(prev => ({
+                      ...prev,
+                      appointmentDate: e.target.value,
+                      appointmentTime: '',
+                    }))}
+                    onKeyDown={handleEnterKey}
+                    className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 ${errors.appointmentDate ? 'border-red-400' : 'border-gray-200'}`}
+                  />
+                  {errors.appointmentDate && <p className="text-xs text-red-500 mt-0.5">{errors.appointmentDate}</p>}
+                  <p className="text-xs text-gray-400 mt-0.5">Kamida 30 soat 30 daqiqa keyin</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1">
+                    Qabul Vaqti <span className="text-red-500">*</span>
+                    {loadingSlots && <span className="text-green-500 ml-1">(yuklanmoqda...)</span>}
+                  </label>
+                  {form.doctorId && form.appointmentDate ? (
+                    availableSlots.length > 0 ? (
+                      <select
+                        value={form.appointmentTime}
+                        onChange={e => setForm(prev => ({ ...prev, appointmentTime: e.target.value }))}
+                        className={`w-full px-3 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-green-500 bg-gray-50 ${errors.appointmentTime ? 'border-red-400' : 'border-gray-200'}`}
+                      >
+                        <option value="">Vaqtni tanlang</option>
+                        {availableSlots.map(slot => (
+                          <option key={slot} value={slot}>{slot}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="w-full px-3 py-2.5 border border-orange-200 rounded-xl text-sm bg-orange-50 text-orange-600 flex items-center gap-2">
+                        <Clock size={14} />
+                        {loadingSlots ? 'Yuklanmoqda...' : "Bu kunda bo'sh vaqt yo'q"}
+                      </div>
+                    )
+                  ) : (
+                    <div className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 text-gray-400">
+                      Avval shifokor va sanani tanlang
+                    </div>
+                  )}
+                  {errors.appointmentTime && <p className="text-xs text-red-500 mt-0.5">{errors.appointmentTime}</p>}
+                </div>
+              </>
+            )}
             <PatientField label="Email" name="email" type="email" form={form} errors={errors} onChange={handleFieldChange} />
             <PatientField label="Telefon" name="phone" required form={form} errors={errors} onChange={handleFieldChange} />
             <div className="md:col-span-3">
@@ -420,7 +528,11 @@ export function PatientsPage() {
             <button type="button" onClick={() => setShowForm(false)} className="flex-1 py-2.5 border border-gray-200 rounded-xl text-gray-700 font-medium text-sm hover:bg-gray-50">
               Bekor qilish
             </button>
-            <button type="submit" className="flex-1 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-medium text-sm hover:from-green-700 hover:to-green-800 shadow-lg shadow-green-600/20">
+            <button
+              type="submit"
+              disabled={!editPatient && form.doctorId && form.appointmentDate && !loadingSlots && availableSlots.length === 0}
+              className="flex-1 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl font-medium text-sm hover:from-green-700 hover:to-green-800 shadow-lg shadow-green-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               {editPatient ? 'Saqlash' : "Ro'yxatga Olish"}
             </button>
           </div>
