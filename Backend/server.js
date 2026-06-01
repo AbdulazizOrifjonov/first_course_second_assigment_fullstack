@@ -11,21 +11,24 @@ const auditRoutes = require('./routes/audit');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// CORS Configuration
+// CORS
 app.use(cors({
-  origin: [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:4173',
-    'https://first-course-second-assignment-fulls-steel.vercel.app'
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  origin: true,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 }));
 
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Root Route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'CareTrack Backend is Running'
+  });
+});
 
 // Health Check
 app.get('/health', (req, res) => {
@@ -44,7 +47,7 @@ app.use('/api/illnesses', illnessRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/audit', auditRoutes);
 
-// 404 Handler
+// 404
 app.use((req, res) => {
   res.status(404).json({
     success: false,
@@ -52,9 +55,9 @@ app.use((req, res) => {
   });
 });
 
-// Global Error Handler
+// Error Handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err);
 
   res.status(500).json({
     success: false,
