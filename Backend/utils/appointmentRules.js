@@ -11,9 +11,6 @@ function getEarliestAppointmentTime() {
   return new Date(Date.now() + MIN_APPOINTMENT_LEAD_MS);
 }
 
-
-
-
 function formatDateLocal(d) {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, '0');
