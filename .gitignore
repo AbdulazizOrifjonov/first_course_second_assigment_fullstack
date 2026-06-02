@@ -1,0 +1,20 @@
+# Environment variables (never commit these)
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+Backend/node_modules/
+Frontend/node_modules/
+
+# Build outputs
+Frontend/dist/
+Frontend/.vite/
+
+# Android (not needed for web app)
+Frontend/android/
+
+# OS
+.DS_Store
+Thumbs.db
