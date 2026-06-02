@@ -9,3 +9,16 @@ services:
     envVars:
       - key: JWT_SECRET
         generateValue: true
+
+  - type: static
+    name: caretrack-frontend
+    rootDir: Frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://first-course-second-assigment-fullstack-1.onrender.com/api
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
